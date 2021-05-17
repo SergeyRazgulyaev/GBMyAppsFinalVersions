@@ -17,7 +17,7 @@ class ​GetDataOperation​: AsyncOperation {
     }
     
     private var request: DataRequest
-    private var data: Data?
+    private(set) var data: Data?
     
     override func main() {
         request.responseData(queue: DispatchQueue.global()) { [weak self] response in
@@ -28,10 +28,5 @@ class ​GetDataOperation​: AsyncOperation {
     
     init(request: DataRequest) {
         self.request = request
-    }
-    
-    //MARK: - Access Methods
-    func getData() -> Data? {
-        return data
     }
 }

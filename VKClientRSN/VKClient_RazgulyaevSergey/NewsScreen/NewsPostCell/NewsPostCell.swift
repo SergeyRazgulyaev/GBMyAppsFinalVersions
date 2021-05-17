@@ -11,21 +11,21 @@ import UIKit
 class NewsPostCell: UITableViewCell {
     @IBOutlet private weak var newsAuthorNameLabel: UILabel!
     @IBOutlet private weak var newsDateLabel: UILabel!
-    @IBOutlet private weak var postTextLabel: UILabel!
+    @IBOutlet private(set) weak var postTextLabel: UILabel!
     @IBOutlet private weak var newsForMeAvatarView: UIView!
     @IBOutlet private weak var newsForMeAvatarImageView: UIImageView!
     @IBOutlet private weak var newsForMeImageView: UIImageView!
-    @IBOutlet private weak var newsLikeIndicator: NewsLike!
-    @IBOutlet private weak var newsCommentIndicator: NewsComment!
-    @IBOutlet private weak var newsShareIndicator: NewsShare!
-    @IBOutlet private weak var newsViewsIndicator: NewsViews!
+    @IBOutlet private(set) weak var newsLikeIndicator: NewsLike!
+    @IBOutlet private(set) weak var newsCommentIndicator: NewsComment!
+    @IBOutlet private(set) weak var newsShareIndicator: NewsShare!
+    @IBOutlet private(set) weak var newsViewsIndicator: NewsViews!
     @IBOutlet private weak var newsPhotoImageHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var newsPostTextHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var postTextShowButton: UIButton!
     
     //MARK: - Base properties
-    private var isPostTextShowButtonPressed: Bool = false
-    private var originalPostTextHeight: CGFloat = 95
+    private(set) var isPostTextShowButtonPressed: Bool = false
+    private(set) var originalPostTextHeight: CGFloat = 95
     private let postTextLabelSideInsets: CGFloat = 20
     var postTextShowButtonAction: (() -> ())?
 
@@ -89,33 +89,11 @@ class NewsPostCell: UITableViewCell {
     }
 
     //MARK: - Access Methods
-    func getNewsLikeIndicator() -> NewsLike {
-        newsLikeIndicator
-    }
-    func getNewsCommentIndicator() -> NewsComment {
-        newsCommentIndicator
-    }
-    func getNewsShareIndicator() -> NewsShare {
-        newsShareIndicator
-    }
-    func getNewsViewsIndicator() -> NewsViews {
-        newsViewsIndicator
-    }
-    func getPostTextLabel() -> String {
-        postTextLabel.text ?? ""
-    }
-    func getOriginalPostTextHeight() -> CGFloat {
-        originalPostTextHeight
-    }
     func getNewsPostTextHeightConstraint() -> CGFloat {
         newsPostTextHeightConstraint.constant
     }
     func getСellHeightIncrement() -> CGFloat {
         newsPostTextHeightConstraint.constant - originalPostTextHeight
-    }
-
-    func getIsPostTextShowButtonPressedStatus() -> Bool {
-        isPostTextShowButtonPressed
     }
     
     func calculateLabelHeight(text: String, font: UIFont) -> CGFloat {
@@ -133,8 +111,6 @@ class NewsPostCell: UITableViewCell {
             font: font)
         
         let height = ceil(rect.size.height)
-//        let width = rect.size.width
-//        let size = CGSize(width: ceil(width), height: ceil(height))
         return height
     }
     
@@ -146,7 +122,6 @@ class NewsPostCell: UITableViewCell {
             
         } else {
             let calculatedLabelHeight = calculateLabelHeight(text: postTextLabel.text ?? "", font: .boldSystemFont(ofSize: 14))
-//            print("calculatedLabelHeight \(calculatedLabelHeight)")
             if calculatedLabelHeight < originalPostTextHeight {
                 newsPostTextHeightConstraint.constant = originalPostTextHeight
             } else {

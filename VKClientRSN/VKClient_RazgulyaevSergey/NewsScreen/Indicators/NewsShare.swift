@@ -42,10 +42,7 @@ class NewsShare: UIControl {
         let newsShareTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTap(_:)))
         addGestureRecognizer(newsShareTapRecognizer)
     }
-    
-    @objc func onTap(_ sender: Any?) {
-        print("News Share indicator tapped")
-    }
+    @objc func onTap(_ sender: Any?) {}
     
     func configureNewsShareLabelText(newsShareLabelText: String) {
         newsShareLabel.text = newsShareLabelText

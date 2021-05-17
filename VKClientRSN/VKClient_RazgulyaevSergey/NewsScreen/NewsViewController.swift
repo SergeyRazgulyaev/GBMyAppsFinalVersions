@@ -84,7 +84,7 @@ extension NewsViewController {
                 }
                 self?.tableView.insertRows(at: indexPathes, with: .automatic)
             case let .failure(error):
-                print(error)
+                print(error.localizedDescription)
             }
         }
         self.refreshControl.endRefreshing()
@@ -101,7 +101,7 @@ extension NewsViewController {
                 self?.tableView.reloadData()
                 completion?()
             case let .failure(error):
-                print(error)
+                print(error.localizedDescription)
             }
         }
     }
@@ -116,21 +116,14 @@ extension NewsViewController: UITableViewDataSourcePrefetching {
             switch result {
             case let .success(prefetchedPostNews):
                 guard prefetchedPostNews.items.count > 0 else { return }
-                
                 self?.newsFromNetwork?.items = (self?.newsFromNetwork?.items ?? []) + (prefetchedPostNews.items)
                 self?.newsFromNetwork?.groups = (self?.newsFromNetwork?.groups ?? []) + (prefetchedPostNews.groups)
                 self?.newsFromNetwork?.profiles = (self?.newsFromNetwork?.profiles ?? []) + (prefetchedPostNews.profiles)
-                
                 self?.tableView.reloadData()
-                
             case let .failure(error):
-                print(error)
+                print(error.localizedDescription)
             }
         }
-    }
-    
-    func tableView(_ tableView: UITableView, cancelPrefetchingForRowsAt indexPaths: [IndexPath]) {
-        //        print("cancelPrefetchingForRowsAt \(indexPaths.first?.row ?? -1)")
     }
     
     func isLoadingCell(for indexPath: IndexPath) -> Bool {
@@ -138,7 +131,6 @@ extension NewsViewController: UITableViewDataSourcePrefetching {
         return indexPath.row == newsCount - 3
     }
 }
-
 
 //MARK: - TableView Data Source Methods
 extension NewsViewController: UITableViewDataSource {
@@ -153,8 +145,7 @@ extension NewsViewController: UITableViewDataSource {
     func configureNewsCell(indexPath: IndexPath) -> UITableViewCell {
         let newsCell = tableView.dequeueReusableCell(withIdentifier: newsPostCellIdentifier, for: indexPath) as? NewsPostCell
         guard let cell = newsCell, let news = newsFromNetwork else {
-            print("Error with News Cell")
-            return UITableViewCell()
+            return UITableViewCell() // If error with News Cell
         }
         
         // Triggering of button "Show more ... hide" in the Cell
@@ -164,10 +155,10 @@ extension NewsViewController: UITableViewDataSource {
         }
         
         // Configure News Likes, Comments, Shares, Views
-        cell.getNewsLikeIndicator().configureNewsLikeLabelText(newsLikeLabelText: String(news.items[indexPath.row].likes.count))
-        cell.getNewsCommentIndicator().configureNewsCommentLabelText(newsCommentLabelText: String(news.items[indexPath.row].comments.count))
-        cell.getNewsShareIndicator().configureNewsShareLabelText(newsShareLabelText: String(news.items[indexPath.row].reposts.count))
-        cell.getNewsViewsIndicator().configureNewsViewsLabelText(newsViewsLabelText: String(news.items[indexPath.row].views.count))
+        cell.newsLikeIndicator.configureNewsLikeLabelText(newsLikeLabelText: String(news.items[indexPath.row].likes.count))
+        cell.newsCommentIndicator.configureNewsCommentLabelText(newsCommentLabelText: String(news.items[indexPath.row].comments.count))
+        cell.newsShareIndicator.configureNewsShareLabelText(newsShareLabelText: String(news.items[indexPath.row].reposts.count))
+        cell.newsViewsIndicator.configureNewsViewsLabelText(newsViewsLabelText: String(news.items[indexPath.row].views.count))
         
         // News Source Checker (Friends or Groups)
         sourceIDChecker = news.items[indexPath.row].sourceID
@@ -274,10 +265,6 @@ extension NewsViewController: UITableViewDataSource {
 
 //MARK: - TableView Delegate Methods
 extension NewsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //                print(indexPath)
-    }
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
@@ -287,13 +274,11 @@ extension NewsViewController: UITableViewDelegate {
 extension NewsViewController {
     func getCellDateText(forIndexPath indexPath: IndexPath, andTimeToTranslate timeToTranslate: Double) -> String {
         if let stringDate = dateTextCache[indexPath] {
-            //            print("The Date of cell \(indexPath.row) is already in the Cache")
             return stringDate
         } else {
             let date = Date(timeIntervalSince1970: timeToTranslate)
             let localDate = dateFormatter.string(from: date)
             dateTextCache[indexPath] = localDate
-            //            print("The Date of cell \(indexPath.row) is written to the Сache")
             return localDate
         }
     }

@@ -9,9 +9,9 @@
 import UIKit
 
 class FriendCell: UITableViewCell {
-    @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private(set) weak var titleLabel: UILabel!
+    @IBOutlet private(set) weak var friendAvatar: FriendAvatar!
     @IBOutlet private weak var friendAvatarImageView: UIImageView!
-    @IBOutlet private weak var friendAvatar: FriendAvatar!
 
     //MARK: - Configuration Methods
     func configureTitleLabel(titleLabelText: String) {
@@ -20,15 +20,6 @@ class FriendCell: UITableViewCell {
     
     func configureFriendAvatarImage(friendAvatarImage: UIImage) {
         friendAvatarImageView.image = friendAvatarImage
-    }
-    
-    //MARK: - Access Methods
-    func getTextFromTitleLabel() -> String {
-        return titleLabel.text ?? ""
-    }
-    
-    func getFriendAvatar() -> FriendAvatar {
-        return friendAvatar
     }
     
     //MARK: - IBActions

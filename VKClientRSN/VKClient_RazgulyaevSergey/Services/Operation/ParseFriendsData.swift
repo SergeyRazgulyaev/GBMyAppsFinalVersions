@@ -9,16 +9,11 @@
 import Foundation
 
 class ParseFriendsData: Operation {
-    private var outputData: [UserItems] = []
+    private(set) var outputData: [UserItems] = []
     
     override func main() {
-        guard let getDataOperation = dependencies.first as? ​GetDataOperation​, let data = getDataOperation.getData() else { return }
+        guard let getDataOperation = dependencies.first as? ​GetDataOperation​, let data = getDataOperation.data else { return }
         guard let friends = try? JSONDecoder().decode(User.self, from: data).response?.items else { return }
         outputData = friends
-    }
-    
-    //MARK: - Access Methods
-    func getOutputData() -> [UserItems] {
-        return outputData
     }
 }

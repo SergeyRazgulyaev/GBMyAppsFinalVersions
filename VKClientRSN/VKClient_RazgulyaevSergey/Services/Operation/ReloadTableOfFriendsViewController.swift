@@ -18,6 +18,6 @@ class ReloadTableOfFriendsViewController: Operation {
     
     override func main() {
         guard let parseData = dependencies.first as? ParseFriendsData else { return }
-        controller.writeFriendsFromNetworkToRealm(writedObjects: parseData.getOutputData())
+        controller.writeFriendsFromNetworkToRealm(writedObjects: parseData.outputData)
     }
 }

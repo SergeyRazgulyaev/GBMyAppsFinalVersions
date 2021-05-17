@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class PhotosViewController: UIViewController {
+class PhotosViewController: UIViewController, UICollectionViewDelegate {
     @IBOutlet private weak var collectionView: UICollectionView!
     @IBOutlet private weak var friendsNameLabel: UILabel!
     
@@ -72,10 +72,7 @@ class PhotosViewController: UIViewController {
 extension PhotosViewController {
     func loadPhotosFromNetWorkIfNeeded() {
         if let photos = oneFriendPhotosFromRealm, photos.isEmpty {
-//            print("loadPhotosFromNetWork activated")
             loadPhotosFromNetWork()
-        } else {
-//            print("loadPhotosFromNetWork is not active")
         }
     }
     
@@ -86,7 +83,7 @@ extension PhotosViewController {
                 try? self?.realmManagerPhotos?.add(objects: photos)
                 self?.collectionView.reloadData()
             case let .failure(error):
-                print(error)
+                print(error.localizedDescription)
             }
         }
     }
@@ -131,16 +128,9 @@ extension PhotosViewController: UICollectionViewDataSource {
         let photoNumber = String("\(oneFriendPhotosFromRealm!.count - indexPath.row)")
         let likeCount = String(oneFriendPhotosFromRealm![indexPath.row].likes!.count)
         cell.configureCellUI(photoCardImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!, photoNumberLabelText: photoNumber, photoDateLabelText: getCellDateText(forIndexPath: indexPath, andTimeToTranslate: Double(oneFriendPhotosFromRealm![indexPath.row].date)))
-        cell.getHeartView().configureheartLabel(heartLabelNumber: likeCount)
+        cell.heartView.configureheartLabel(heartLabelNumber: likeCount)
         cell.userID = friendID
         return cell
-    }
-}
-
-//MARK: - Collection Delegate Methods
-extension PhotosViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        //        print(indexPath)
     }
 }
 
@@ -181,13 +171,11 @@ extension PhotosViewController: UINavigationControllerDelegate {
 extension PhotosViewController {
     func getCellDateText(forIndexPath indexPath: IndexPath, andTimeToTranslate timeToTranslate: Double) -> String {
         if let stringDate = dateTextCache[indexPath] {
-//            print("The Date of cell \(indexPath.row) is already in the Cache")
             return stringDate
         } else {
             let date = Date(timeIntervalSince1970: timeToTranslate)
             let localDate = dateFormatter.string(from: date)
             dateTextCache[indexPath] = localDate
-//            print("The Date of cell \(indexPath.row) is written to the Сache")
             return localDate
         }
     }

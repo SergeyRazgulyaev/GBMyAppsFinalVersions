@@ -10,7 +10,7 @@ import UIKit
 import RealmSwift
 import Alamofire
 
-class FriendsViewController: UIViewController {
+class FriendsViewController: UIViewController, UITableViewDelegate {
     @IBOutlet private weak var searchBar: UISearchBar!
     @IBOutlet private weak var tableView: UITableView!
     
@@ -75,8 +75,8 @@ class FriendsViewController: UIViewController {
             let destination = segue.destination as? PhotosViewController
 //            let destination = segue.destination as? ASDKPhotosViewController
         {
-            destination.name = cell.getTextFromTitleLabel()
-            destination.friendID = cell.getFriendAvatar().getUserID()
+            destination.name = cell.titleLabel.text
+            destination.friendID = cell.friendAvatar.userID
         }
     }
     
@@ -101,10 +101,8 @@ class FriendsViewController: UIViewController {
 extension FriendsViewController {
     func loadFriendsFromNetWorkIfNeeded() {
         if let friends = filteredFriends, friends.isEmpty {
-//            print("loadFriendsFromNetWork activated")
             loadFriendsFromNetWork()
         } else {
-//            print("loadFriendsFromNetWork is not active")
             friendsNameFirstCharactersArrayCreation()
         }
     }
@@ -195,7 +193,7 @@ extension FriendsViewController: UITableViewDataSource {
             guard let url = URL(string: friendAvatarImage), let data = try? Data(contentsOf: url) else { return cell }
             cell.configureTitleLabel(titleLabelText: String("\(friend!.firstName) \(friend!.lastName)"))
             cell.configureFriendAvatarImage(friendAvatarImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!)
-            cell.getFriendAvatar().configureUserID(userID: filteredFriends?[indexPath.row].id ?? 0)
+            cell.friendAvatar.configureUserID(userID: filteredFriends?[indexPath.row].id ?? 0)
         } else {
             var friendsForSection: Results<UserItems>? {
                 let friendsForSection: Results<UserItems>? = realmManager?.getObjects().filter("firstName BEGINSWITH '\(friendsNameFirstCharactersArray[indexPath.section])'")
@@ -205,8 +203,8 @@ extension FriendsViewController: UITableViewDataSource {
             let friendName = String("\(friendsForSection![indexPath.row].firstName) \(friendsForSection![indexPath.row].lastName)")
             cell.configureTitleLabel(titleLabelText: friendName)
             cell.configureFriendAvatarImage(friendAvatarImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!)
-            cell.getFriendAvatar().tag = indexPath.row
-            cell.getFriendAvatar().configureUserID(userID: friendsForSection![indexPath.row].id)
+            cell.friendAvatar.tag = indexPath.row
+            cell.friendAvatar.configureUserID(userID: friendsForSection![indexPath.row].id)
         }
         return cell
     }
@@ -254,19 +252,11 @@ extension FriendsViewController: UITableViewDataSource {
     }
 }
 
-//MARK: - TableView Delegate Methods
-extension FriendsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //        print("Cell \(indexPath) selected")
-    }
-}
-
 //MARK: - Preparing Data for display
 extension FriendsViewController {
     func friendsNameFirstCharactersArrayCreation() {
         guard friendsFromRealm?.count ?? 0 > 0 else {
-            print("Network error")
-            return
+            return // If network error
         }
         for friend in friendsFromRealm! {
             friendsNameFirstCharactersSet.insert(String(friend.firstName.first!))

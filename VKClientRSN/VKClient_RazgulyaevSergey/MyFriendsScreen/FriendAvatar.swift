@@ -14,7 +14,7 @@ class FriendAvatar: UIControl {
     @IBOutlet private weak var titleLable: UILabel!
     
     //MARK: - Base properties
-    private var userID: Int?
+    private(set) var userID: Int?
     private var filteredArray = [MyFriends]()
     private var myFriendsArray: [MyFriends] = []
     
@@ -54,11 +54,6 @@ class FriendAvatar: UIControl {
     
     func configureUserID(userID: Int) {
         self.userID = userID
-    }
-    
-    //MARK: - Access Methods
-    func getUserID() -> Int {
-        return userID ?? 0
     }
     
     //MARK: - User interaction

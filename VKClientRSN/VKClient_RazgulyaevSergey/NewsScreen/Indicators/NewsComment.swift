@@ -42,10 +42,7 @@ class NewsComment: UIControl {
         let newsCommentTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTap(_:)))
         addGestureRecognizer(newsCommentTapRecognizer)
     }
-    
-    @objc func onTap(_ sender: Any?) {
-        print("News Comments indicator tapped")
-    }
+    @objc func onTap(_ sender: Any?) {}
     
     func configureNewsCommentLabelText(newsCommentLabelText: String) {
         newsCommentLabel.text = newsCommentLabelText

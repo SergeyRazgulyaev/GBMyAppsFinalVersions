@@ -42,9 +42,7 @@ class NewsViews: UIView {
         let newsViewsTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTap(_:)))
         addGestureRecognizer(newsViewsTapRecognizer)
     }
-    @objc func onTap(_ sender: Any?) {
-        print("News Views indicator tapped")
-    }
+    @objc func onTap(_ sender: Any?) {}
     
     func configureNewsViewsLabelText(newsViewsLabelText: String) {
         newsViewsLabel.text = newsViewsLabelText

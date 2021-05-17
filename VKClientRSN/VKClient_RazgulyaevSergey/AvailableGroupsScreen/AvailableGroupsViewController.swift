@@ -8,7 +8,7 @@
 
 import UIKit
 
-class AvailableGroupsViewController: UIViewController {
+class AvailableGroupsViewController: UIViewController, UITableViewDelegate {
     @IBOutlet private weak var searchBar: UISearchBar!
     @IBOutlet private weak var tableView: UITableView!
     
@@ -70,7 +70,7 @@ extension AvailableGroupsViewController {
                 }
                 self?.tableView.reloadData()
             case let .failure(error):
-                print(error)
+                print(error.localizedDescription)
             }
         }
     }
@@ -101,13 +101,6 @@ extension AvailableGroupsViewController: UITableViewDataSource {
             titleLabelText: titleLabelText,
             availableGroupsAvatarImage: image)
         return cell
-    }
-}
-
-//MARK: - TableView Delegate Methods
-extension AvailableGroupsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //        print(indexPath)
     }
 }
 

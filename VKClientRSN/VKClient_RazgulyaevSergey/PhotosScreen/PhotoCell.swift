@@ -14,7 +14,7 @@ class PhotoCell: UICollectionViewCell {
     @IBOutlet private weak var photoNumberLabel: UILabel!
     @IBOutlet private weak var photoDateLabel: UILabel!
     @IBOutlet private weak var friendNameLabel: UILabel!
-    @IBOutlet private weak var heartView: HeartView!
+    @IBOutlet private(set) weak var heartView: HeartView!
     
     //MARK: - Base properties
     var userID: Int?
@@ -45,7 +45,7 @@ class PhotoCell: UICollectionViewCell {
     @objc func onTap(_ sender: Any?) {
         photosViewController.shouldPerformSegue(withIdentifier: "zoomPhotoSegue", sender: Any?.self)
         let vc = photosViewController.storyboard?.instantiateViewController(withIdentifier: "ZoomPhotoVC") as! ZoomPhotoViewController
-        vc.friendZoomPhotoNumber = Int(photoNumberLabel.text!)
+        vc.friendZoomPhotoNumber = Int(photoNumberLabel.text!) ?? 1
         vc.friendID = userID
         vc.transitioningDelegate = photosViewController as? UIViewControllerTransitioningDelegate
         photosViewController.navigationController?.delegate = photosViewController as? UINavigationControllerDelegate
@@ -56,10 +56,5 @@ class PhotoCell: UICollectionViewCell {
         photoCardImageView.image = photoCardImage
         photoNumberLabel.text = photoNumberLabelText
         photoDateLabel.text = photoDateLabelText
-    }
-    
-    //MARK: - Access Methods
-    func getHeartView() -> HeartView {
-        return heartView
     }
 }

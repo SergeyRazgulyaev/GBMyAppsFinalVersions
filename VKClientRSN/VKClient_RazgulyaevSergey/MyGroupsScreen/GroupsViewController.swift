@@ -109,10 +109,10 @@ extension GroupsViewController {
         .done(on: .main) { [weak self] groups in
             try? self?.realmManager?.add(objects: groups)}
             .catch { error in
-                print(error)
+                print(error.localizedDescription)
         }
         .finally {
-            print("Groups data is written to the Realm DataBase")
+            // Groups data is written to the Realm DataBase
         }
     }
     
