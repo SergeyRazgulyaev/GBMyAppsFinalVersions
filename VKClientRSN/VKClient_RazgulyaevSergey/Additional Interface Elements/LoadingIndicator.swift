@@ -65,13 +65,8 @@ class LoadingIndicator: UIView {
                 UIView.animate(withDuration: 1.0, animations:{
                     self?.loadingIndicatorImageView3.image = UIImage(systemName: "tortoise.fill")
                     self?.loadingIndicatorImageView3.alpha = 0.0
-//                }, completion: { [weak self] _ in
-                    //                    self.loginViewController.shouldPerformSegue(withIdentifier: "loginSegue", sender: Any?.self)
-                    //                    let vc = self.loginViewController.storyboard?.instantiateViewController(withIdentifier: "AfterLoginVC")
-                    //                    self.loginViewController.present(vc!, animated: true, completion: nil)
                 })
             })
         })
-        
     }
 }

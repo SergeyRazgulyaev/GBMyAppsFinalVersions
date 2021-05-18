@@ -25,6 +25,7 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         configureWebView()
         configureRequest()
+        configureTextFields()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -35,6 +36,16 @@ class LoginViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         keyboardRemoveObserver()
+    }
+    
+    //MARK: - Configuration Methods
+    func configureTextFields() {
+        loginTextField.autocapitalizationType = .none
+        loginTextField.autocorrectionType = .no
+        loginTextField.spellCheckingType = .no
+        passwordTextField.autocapitalizationType = .none
+        passwordTextField.autocorrectionType = .no
+        passwordTextField.spellCheckingType = .no
     }
     
     //MARK: - Animation
@@ -76,8 +87,10 @@ extension LoginViewController {
             URLQueryItem(name: "response_type", value: "token"),
             URLQueryItem(name: "v", value: "5.124")
         ]
-        let request = URLRequest(url: components.url!)
-        webView.load(request)
+        if let componentsURL = components.url {
+            let request = URLRequest(url: componentsURL)
+            webView.load(request)
+        }
     }
 }
 
