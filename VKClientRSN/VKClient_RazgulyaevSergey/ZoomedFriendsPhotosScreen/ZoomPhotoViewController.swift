@@ -21,7 +21,7 @@ class ZoomPhotoViewController: UIViewController {
     private var shownImage: UIImage? = UIImage(systemName: "hare")
     private var nextImage: UIImage? = UIImage(systemName: "hare")
     private lazy var zoomPhotoIndex: Int = {
-        return oneFriendPhotosFromRealm!.count - friendZoomPhotoNumber
+        return friendZoomPhotoNumber - 1 
     }()
 
     //MARK: - Properties for Interaction with Network
