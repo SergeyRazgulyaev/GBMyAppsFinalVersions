@@ -15,25 +15,22 @@ class FriendsViewController: UIViewController, UITableViewDelegate {
     @IBOutlet private weak var tableView: UITableView!
     
     //MARK: - Base properties
-    private var friendsNameFirstCharactersSet: Set<String> = []
-    private var friendsNameFirstCharactersArray: [String] = []
+    private var setWithFirstLettersOfFriendsName: Set<String> = []
+    private var arrayWithFirstLettersOfFriendsName: [String] = []
     
     //MARK: - Properties for Interaction with Network
     private let networkService = NetworkService()
     private let myOperationQueue = OperationQueue()
     
     //MARK: - Properties for Interaction with Database
-    private var filteredFriendsNotificationToken: NotificationToken?
+    private var friendsFromRealmDBNotificationToken: NotificationToken?
     private let realmManager = RealmManager.instance
     
-    private var friendsFromRealm: Results<UserItems>? {
-        let friendsFromRealm: Results<UserItems>? = realmManager?.getObjects()
-        return friendsFromRealm
-    }
-    
-    private var filteredFriends: Results<UserItems>? {
-        guard !searchText.isEmpty else { return friendsFromRealm }
-        return friendsFromRealm?.filter("firstName CONTAINS[cd] %@ OR lastName CONTAINS[cd] %@", searchText, searchText)
+    private var friendsFromRealmDB: Results<UserItems>? {
+        guard searchText.isEmpty else {
+            return realmManager?.getObjects().filter("firstName CONTAINS[cd] %@ OR lastName CONTAINS[cd] %@", searchText, searchText)
+        }
+        return realmManager?.getObjects()
     }
     
     //MARK: - Properties for SearchController
@@ -53,6 +50,13 @@ class FriendsViewController: UIViewController, UITableViewDelegate {
         return refreshControl
     }()
     
+    @objc private func refresh(_ sender: UIRefreshControl) {
+        loadFriendsFromNetWork { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
+        arrayWithFirstLettersOfFriendsNameCreation()
+    }
+    
     //MARK: - ViewController Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,19 +66,17 @@ class FriendsViewController: UIViewController, UITableViewDelegate {
         loadFriendsFromNetWorkIfNeeded()
     }
     
-    //MARK: - Deinit filteredFriendsNotificationToken
+    //MARK: - Deinit friendsFromRealmDBNotificationToken
     deinit {
-        filteredFriendsNotificationToken?.invalidate()
+        friendsFromRealmDBNotificationToken?.invalidate()
     }
     
     //MARK: - Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
         if segue.identifier == "photosSegue",
-            let cell = sender as? FriendCell,
-            let destination = segue.destination as? PhotosViewController
-//            let destination = segue.destination as? ASDKPhotosViewController
-        {
+           let cell = sender as? FriendCell,
+           let destination = segue.destination as? PhotosViewController {
             destination.name = cell.titleLabel.text
             destination.friendID = cell.friendAvatar.userID
         }
@@ -100,10 +102,10 @@ class FriendsViewController: UIViewController, UITableViewDelegate {
 //MARK: - Interaction with Network
 extension FriendsViewController {
     func loadFriendsFromNetWorkIfNeeded() {
-        if let friends = filteredFriends, friends.isEmpty {
+        if let friends = friendsFromRealmDB, friends.isEmpty {
             loadFriendsFromNetWork()
         } else {
-            friendsNameFirstCharactersArrayCreation()
+            arrayWithFirstLettersOfFriendsNameCreation()
         }
     }
     
@@ -122,19 +124,12 @@ extension FriendsViewController {
         OperationQueue.main.addOperation(reloadTableOfFriendsViewController)
         completion?()
     }
-    
-    @objc private func refresh(_ sender: UIRefreshControl) {
-        loadFriendsFromNetWork { [weak self] in
-            self?.refreshControl.endRefreshing()
-        }
-        friendsNameFirstCharactersArrayCreation()
-    }
 }
 
 //MARK: - Interaction with Realm Database
 extension FriendsViewController {
     private func createNotification() {
-        filteredFriendsNotificationToken = filteredFriends?.observe { [weak self] change in
+        friendsFromRealmDBNotificationToken = friendsFromRealmDB?.observe { [weak self] change in
             switch change {
             case let . initial(filteredFriends):
                 print("Initialized \(filteredFriends.count)")
@@ -146,7 +141,7 @@ extension FriendsViewController {
                     Insertions: \(insertions)
                     Modifications: \(modifications)
                     """)
-                self?.friendsNameFirstCharactersArrayCreation()
+                self?.arrayWithFirstLettersOfFriendsNameCreation()
                 self?.tableView.reloadData()
                 
             case let .error(error):
@@ -159,115 +154,86 @@ extension FriendsViewController {
         try? realmManager?.add(objects: writedObjects)
         tableView.reloadData()
     }
+    
+    func friendsForSectionByFirstLetter(arrayWithFirstLettersOfFriendsName: [String],
+                                        section: Int) -> Results<UserItems>? {
+        let friendsForSection: Results<UserItems>? = friendsFromRealmDB?.filter("firstName BEGINSWITH '\(arrayWithFirstLettersOfFriendsName[section])'")
+        return friendsForSection
+    }
 }
 
 //MARK: - TableView Data Source Methods
 extension FriendsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        if isFiltering {
-            return 1
-        }
-        return friendsNameFirstCharactersArray.count
+        return arrayWithFirstLettersOfFriendsName.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if isFiltering {
-            return filteredFriends?.count ?? 0
-        }
-        var friendsForSection: Results<UserItems>? {
-            let friendsForSection: Results<UserItems>? = realmManager?.getObjects().filter("firstName BEGINSWITH '\(friendsNameFirstCharactersArray[section])'")
-            return friendsForSection
-        }
-        return friendsForSection!.count
+        let friendsForSection = friendsForSectionByFirstLetter(arrayWithFirstLettersOfFriendsName: arrayWithFirstLettersOfFriendsName, section: section)
+        return friendsForSection?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         configureCell(indexPath: indexPath)
     }
     
-    func configureCell(indexPath: IndexPath) -> UITableViewCell {
+    private func configureCell(indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell") as? FriendCell else { return UITableViewCell() }
-        if isFiltering {
-            let friend = filteredFriends?[indexPath.row]
-            let friendAvatarImage = friend?.photo100 ?? ""
-            guard let url = URL(string: friendAvatarImage), let data = try? Data(contentsOf: url) else { return cell }
-            cell.configureTitleLabel(titleLabelText: String("\(friend!.firstName) \(friend!.lastName)"))
-            cell.configureFriendAvatarImage(friendAvatarImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!)
-            cell.friendAvatar.configureUserID(userID: filteredFriends?[indexPath.row].id ?? 0)
-        } else {
-            var friendsForSection: Results<UserItems>? {
-                let friendsForSection: Results<UserItems>? = realmManager?.getObjects().filter("firstName BEGINSWITH '\(friendsNameFirstCharactersArray[indexPath.section])'")
-                return friendsForSection
+        let friendsForSection = friendsForSectionByFirstLetter(arrayWithFirstLettersOfFriendsName: arrayWithFirstLettersOfFriendsName, section: indexPath.section)
+        if let friend = friendsForSection?[indexPath.row] {
+            cell.friendAvatar.configureUserID(userID: friend.id)
+            cell.configureTitleLabel(titleLabelText: String("\(friend.firstName) \(friend.lastName)"))
+            if let url = URL(string: friend.photo100),
+               let data = try? Data(contentsOf: url),
+               let friendAvatarImage = UIImage(data: data) {
+                cell.configureFriendAvatarImage(friendAvatarImage: friendAvatarImage)
             }
-            guard let url = URL(string: friendsForSection![indexPath.row].photo100), let data = try? Data(contentsOf: url) else { return cell }
-            let friendName = String("\(friendsForSection![indexPath.row].firstName) \(friendsForSection![indexPath.row].lastName)")
-            cell.configureTitleLabel(titleLabelText: friendName)
-            cell.configureFriendAvatarImage(friendAvatarImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!)
-            cell.friendAvatar.tag = indexPath.row
-            cell.friendAvatar.configureUserID(userID: friendsForSection![indexPath.row].id)
         }
         return cell
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            var friendsForSection: Results<UserItems>? {
-                let friendsForSection: Results<UserItems>? = realmManager?.getObjects().filter("firstName BEGINSWITH '\(friendsNameFirstCharactersArray[indexPath.section])'")
-                return friendsForSection
-            }
-            if isFiltering {
-                try? realmManager?.delete(object: filteredFriends![indexPath.item])
-            } else {
-                try? realmManager?.delete(object: friendsForSection![indexPath.item])
+            if let friendsForSection = friendsForSectionByFirstLetter(arrayWithFirstLettersOfFriendsName: arrayWithFirstLettersOfFriendsName, section: indexPath.section) {
+                try? realmManager?.delete(object: friendsForSection[indexPath.item])
             }
         }
     }
     
     internal func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        if isFiltering {
-            let headerName = ""
-            guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "headerFirstLetter") as? SectionHeader else { return UIView() }
-            header.configureHeaderFirstLetterLabelText(headerFirstLetterLabelText: headerName)
-            return header
-        } else {
-            guard friendsNameFirstCharactersArray.count > 0, tableView.numberOfRows(inSection: section) != 0 else {
-                let headerName = ""
-                guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "headerFirstLetter") as? SectionHeader else { return UIView() }
-                header.configureHeaderFirstLetterLabelText(headerFirstLetterLabelText: headerName)
-                return header
-            }
-            let headerName = String(friendsNameFirstCharactersArray[section].first!)
-            guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "headerFirstLetter") as? SectionHeader else { return UIView() }
-            header.configureHeaderFirstLetterLabelText(headerFirstLetterLabelText: headerName)
-            return header
+        guard arrayWithFirstLettersOfFriendsName.count > 0,
+              tableView.numberOfRows(inSection: section) != 0,
+              let firstLetter = arrayWithFirstLettersOfFriendsName[section].first else {
+            return UIView()
         }
-    }
-    
-    func sectionIndexTitles(for tableView: UITableView) -> [String]? {
-        if isFiltering {
-            return []
-        } else {
-            return friendsNameFirstCharactersArray
-        }
+        let headerName = String(firstLetter)
+        guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: "headerFirstLetter") as? SectionHeader else { return UIView() }
+        header.configureHeaderFirstLetterLabelText(headerFirstLetterLabelText: headerName)
+        return header
     }
 }
 
 //MARK: - Preparing Data for display
 extension FriendsViewController {
-    func friendsNameFirstCharactersArrayCreation() {
-        guard friendsFromRealm?.count ?? 0 > 0 else {
-            return // If network error
+    func arrayWithFirstLettersOfFriendsNameCreation() {
+        setWithFirstLettersOfFriendsName = []
+        arrayWithFirstLettersOfFriendsName = []
+        if let friendsFromRealmDB = friendsFromRealmDB {
+            guard friendsFromRealmDB.count > 0 else {
+                return // If network error
+            }
+            for friend in friendsFromRealmDB {
+                setWithFirstLettersOfFriendsName.insert(String(friend.firstName.first!))
+            }
+            arrayWithFirstLettersOfFriendsName = setWithFirstLettersOfFriendsName.sorted()
         }
-        for friend in friendsFromRealm! {
-            friendsNameFirstCharactersSet.insert(String(friend.firstName.first!))
-        }
-        friendsNameFirstCharactersArray = friendsNameFirstCharactersSet.sorted()
     }
 }
 
 //MARK: - SearchController
 extension FriendsViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        arrayWithFirstLettersOfFriendsNameCreation()
         tableView.reloadData()
     }
 }

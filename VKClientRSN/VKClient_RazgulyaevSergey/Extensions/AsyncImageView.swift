@@ -21,8 +21,9 @@ class AsyncImageView: UIImageView {
             _image = newValue
             layer.contents = nil
             
-            guard let image = newValue else { return }
-            
+            guard let image = newValue else {
+                return
+            }
             DispatchQueue.global(qos: .userInitiated).async {
                 let decodedCGImage = self.decode(image)
                 DispatchQueue.main.async {
@@ -61,7 +62,6 @@ class AsyncImageView: UIImageView {
             height: newImage.height
         )
         
-        //        let maxDimension = CGFloat(max(newImage.width, newImage.height))
         let cornerRadius = UIBezierPath(roundedRect: imageRect, cornerRadius: 70).cgPath
         
         context?.addPath(cornerRadius)
@@ -81,7 +81,8 @@ class AsyncImageView: UIImageView {
 
 extension AsyncImageView {
     private struct Cache {
-        static var instance = NSCache<AnyObject, AnyObject>() }
+        static var instance = NSCache<AnyObject, AnyObject>()
+    }
     class var cache: NSCache<AnyObject, AnyObject> {
         get {
             return Cache.instance

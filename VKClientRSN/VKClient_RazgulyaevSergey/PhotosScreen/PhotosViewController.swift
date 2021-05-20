@@ -125,7 +125,7 @@ extension PhotosViewController: UICollectionViewDataSource {
     func configureCell(indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as? PhotoCell else { return UICollectionViewCell() }
         guard let url = URL(string: ((oneFriendPhotosFromRealm?[indexPath.row])?.sizes.last?.url)!), let data = try? Data(contentsOf: url) else { return cell }
-        let photoNumber = String("\(oneFriendPhotosFromRealm!.count - indexPath.row)")
+        let photoNumber = String("\(indexPath.row + 1)")
         let likeCount = String(oneFriendPhotosFromRealm![indexPath.row].likes!.count)
         cell.configureCellUI(photoCardImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!, photoNumberLabelText: photoNumber, photoDateLabelText: getCellDateText(forIndexPath: indexPath, andTimeToTranslate: Double(oneFriendPhotosFromRealm![indexPath.row].date)))
         cell.heartView.configureheartLabel(heartLabelNumber: likeCount)

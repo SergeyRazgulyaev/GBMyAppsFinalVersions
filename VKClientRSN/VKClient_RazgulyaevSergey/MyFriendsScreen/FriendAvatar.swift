@@ -61,15 +61,8 @@ class FriendAvatar: UIControl {
         CATransaction.begin()
         CATransaction.setCompletionBlock({
             self.friendViewController.shouldPerformSegue(withIdentifier: "photosSegue", sender: Any?.self)
-            
-            // If used first version of Photo Gallery
             let vc = self.friendViewController.storyboard?.instantiateViewController(withIdentifier: "FriendsPhotosVC") as! PhotosViewController
-            
-            // If used second (ASDK) version of Photo Gallery
-//            let vc = ASDKPhotosViewController()
-
             vc.name = self.titleLable.text ?? ""
-            
             vc.friendID = self.userID!
             self.filterContentForName(self.titleLable.text!)
             self.accessibilityActivate()

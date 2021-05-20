@@ -102,8 +102,12 @@ extension LoginViewController: WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
         guard let url = navigationResponse.response.url,
-            url.path == "/blank.html",
-            let fragment = url.fragment else { decisionHandler(.allow); return }
+              url.path == "/blank.html",
+              let fragment = url.fragment else {
+            decisionHandler(.allow);
+            return
+        }
+        
         let params = fragment
             .components(separatedBy: "&")
             .map { $0.components(separatedBy: "=") }
@@ -114,6 +118,7 @@ extension LoginViewController: WKNavigationDelegate {
                 dict[key] = value
                 return dict
         }
+        
         guard let token = params["access_token"],
             let userIdString = params["user_id"],
             let _ = Int(userIdString) else {
@@ -143,7 +148,9 @@ extension LoginViewController {
     }
     
     @objc func keyboardWillShown(notification: Notification) {
-        let info = notification.userInfo! as NSDictionary
+        guard let info = notification.userInfo as NSDictionary? else {
+            return
+        }
         let keyboardSize = (info.value(forKey: UIResponder.keyboardFrameEndUserInfoKey) as! NSValue).cgRectValue.size
         let contentInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardSize.height, right: 0.0)
         scrollView.contentInset = contentInsets
