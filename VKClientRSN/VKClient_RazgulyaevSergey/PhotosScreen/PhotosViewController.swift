@@ -77,7 +77,10 @@ extension PhotosViewController {
     }
     
     func loadPhotosFromNetWork() {
-        networkService.loadPhotos(token: Session.instance.token, ownerID: friendID!, albumID: .profile, photoCount: 10) { [weak self] result in
+        networkService.loadPhotos(token: Session.instance.token,
+                                  ownerID: friendID ?? 0,
+                                  albumID: .profile,
+                                  photoCount: 10) { [weak self] result in
             switch result {
             case let .success(photos):
                 try? self?.realmManagerPhotos?.add(objects: photos)
@@ -115,7 +118,7 @@ extension PhotosViewController {
 //MARK: - Collection Data Source Methods
 extension PhotosViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        oneFriendPhotosFromRealm!.count
+        oneFriendPhotosFromRealm?.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -123,12 +126,24 @@ extension PhotosViewController: UICollectionViewDataSource {
     }
 
     func configureCell(indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as? PhotoCell else { return UICollectionViewCell() }
-        guard let url = URL(string: ((oneFriendPhotosFromRealm?[indexPath.row])?.sizes.last?.url)!), let data = try? Data(contentsOf: url) else { return cell }
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as? PhotoCell else {
+            return UICollectionViewCell()
+        }
+        guard let onePhoto = oneFriendPhotosFromRealm?[indexPath.row],
+              let urlFromRealm = onePhoto.sizes.last?.url,
+              let url = URL(string: urlFromRealm),
+              let data = try? Data(contentsOf: url),
+              let photoCardImage = UIImage(data: data),
+              let likeCount = onePhoto.likes?.count else {
+            return cell
+        }
         let photoNumber = String("\(indexPath.row + 1)")
-        let likeCount = String(oneFriendPhotosFromRealm![indexPath.row].likes!.count)
-        cell.configureCellUI(photoCardImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!, photoNumberLabelText: photoNumber, photoDateLabelText: getCellDateText(forIndexPath: indexPath, andTimeToTranslate: Double(oneFriendPhotosFromRealm![indexPath.row].date)))
-        cell.heartView.configureheartLabel(heartLabelNumber: likeCount)
+        cell.configureCellUI(
+                photoCardImage: photoCardImage,
+                photoNumberLabelText: photoNumber,
+                photoDateLabelText: getCellDateText(forIndexPath: indexPath,
+                                                    andTimeToTranslate: Double(onePhoto.date)))
+        cell.heartView.configureheartLabel(heartLabelNumber: String(likeCount))
         cell.userID = friendID
         return cell
     }

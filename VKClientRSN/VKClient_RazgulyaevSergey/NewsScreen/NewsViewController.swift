@@ -171,8 +171,12 @@ extension NewsViewController: UITableViewDataSource {
             cell.configureNewsAuthorNameLabelText(newsAuthorNameLabelText: groupOwner?.name ?? "")
             cell.comfigureOriginalPostTextHeight(postTextHeight: 95)
             let newsPostSourceAvatarImage = groupOwner?.photo100 ?? ""
-            guard let newsPostSourceAvatarImageURL = URL(string: newsPostSourceAvatarImage), let newsPostSourceAvatarImageData = try? Data(contentsOf: newsPostSourceAvatarImageURL) else { return cell }
-            cell.configureNewsForMeAvatarImageView(newsForMeAvatarImage: (UIImage(data: newsPostSourceAvatarImageData) ?? UIImage(systemName: "tortoise.fill"))!)
+            guard let newsPostSourceAvatarImageURL = URL(string: newsPostSourceAvatarImage),
+                  let newsPostSourceAvatarImageData = try? Data(contentsOf: newsPostSourceAvatarImageURL),
+                  let newsForMeAvatarImage = UIImage(data: newsPostSourceAvatarImageData) else {
+                return cell
+            }
+            cell.configureNewsForMeAvatarImageView(newsForMeAvatarImage: newsForMeAvatarImage)
             
             let postText = news.items[indexPath.row].text ?? ""
             cell.configureNewsDateLabelText(newsDateLabelText: getCellDateText(forIndexPath: indexPath, andTimeToTranslate: Double(news.items[indexPath.row].date)))
@@ -189,8 +193,12 @@ extension NewsViewController: UITableViewDataSource {
             cell.configureNewsAuthorNameLabelText(newsAuthorNameLabelText:(friendOwner?.firstName ?? "") + (" ") + (friendOwner?.lastName ?? ""))
             
             let newsPostSourceAvatarImage = friendOwner?.photo100 ?? ""
-            guard let newsPostSourceAvatarImageURL = URL(string: newsPostSourceAvatarImage), let newsPostSourceAvatarImageData = try? Data(contentsOf: newsPostSourceAvatarImageURL) else { return cell }
-            cell.configureNewsForMeAvatarImageView(newsForMeAvatarImage: (UIImage(data: newsPostSourceAvatarImageData) ?? UIImage(systemName: "tortoise.fill"))!)
+            guard let newsPostSourceAvatarImageURL = URL(string: newsPostSourceAvatarImage),
+                  let newsPostSourceAvatarImageData = try? Data(contentsOf: newsPostSourceAvatarImageURL),
+                  let newsForMeAvatarImage = UIImage(data: newsPostSourceAvatarImageData) else {
+                return cell
+            }
+            cell.configureNewsForMeAvatarImageView(newsForMeAvatarImage: newsForMeAvatarImage)
             
             // Checking for any Data in NewsCopyHistory
             guard news.items[indexPath.row].newsCopyHistory?.count ?? 0 > 0 else {
@@ -232,8 +240,11 @@ extension NewsViewController: UITableViewDataSource {
         }
         let calculatedPhotoHeight = tableView.frame.width / photoRatio
         let newsPostPhoto = pathForPhoto.url ?? ""
-        guard let url = URL(string: newsPostPhoto), let data = try? Data(contentsOf: url) else { return }
-        cell.configureNewsForMeImage(newsForMeImage: (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!, photoHeight: calculatedPhotoHeight)
+        guard let url = URL(string: newsPostPhoto),
+              let data = try? Data(contentsOf: url),
+              let newsForMeImage = UIImage(data: data)
+              else { return }
+        cell.configureNewsForMeImage(newsForMeImage: newsForMeImage, photoHeight: calculatedPhotoHeight)
         return
     }
     

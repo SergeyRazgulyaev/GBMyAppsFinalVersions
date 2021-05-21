@@ -51,7 +51,10 @@ extension ZoomPhotoViewController {
             zoomedFriendsPhotoImageView.image = UIImage(systemName: "tortoise")
             return
         }
-        networkService.loadPhotos(token: Session.instance.token, ownerID: friendID!, albumID: .profile, photoCount: 10) { [weak self] result in
+        networkService.loadPhotos(token: Session.instance.token,
+                                  ownerID: friendID ?? 0,
+                                  albumID: .profile,
+                                  photoCount: 10) { [weak self] result in
             switch result {
             case let .success(photos):
                 try? self?.realmManagerPhotos?.add(objects: photos)
@@ -65,18 +68,32 @@ extension ZoomPhotoViewController {
 //MARK: - Preparation for Display 
 extension ZoomPhotoViewController {
     func showZoomPhotos() {
-        guard let zoomedFriendsPhotoURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex].sizes.last!.url), let zoomedFriendsPhotoData = try? Data(contentsOf: zoomedFriendsPhotoURL) else { return }
-        if zoomPhotoIndex < (oneFriendPhotosFromRealm!.count - 1) && zoomPhotoIndex >= 0 {
-            guard let zoomedNextFriendsPhotoURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex + 1].sizes.last!.url), let zoomedNextFriendsPhotoData = try? Data(contentsOf: zoomedNextFriendsPhotoURL) else { return }
+        guard let onePhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex],
+              let urlFromRealm = onePhoto.sizes.last?.url,
+              let zoomedFriendsPhotoURL = URL(string: urlFromRealm),
+              let zoomedFriendsPhotoData = try? Data(contentsOf: zoomedFriendsPhotoURL),
+              let photosCount = oneFriendPhotosFromRealm?.count else {
+            return
+        }
+        if (zoomPhotoIndex >= 0) && (zoomPhotoIndex < (photosCount - 1)) {
+            guard let oneNextPhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex + 1],
+                  let urlFromRealm = oneNextPhoto.sizes.last?.url,
+                  let zoomedNextFriendsPhotoURL = URL(string: urlFromRealm),
+                  let zoomedNextFriendsPhotoData = try? Data(contentsOf: zoomedNextFriendsPhotoURL) else {
+                return
+            }
+            zoomedFriendsPhotoImageView.image = UIImage(data: zoomedFriendsPhotoData)
+            zoomedNextFriendPhotoImageView.image = UIImage(data: zoomedNextFriendsPhotoData)
+        } else if zoomPhotoIndex == (photosCount - 1) {
+            guard let oneNextPhoto = oneFriendPhotosFromRealm?[0],
+                  let urlFromRealm = oneNextPhoto.sizes.last?.url,
+                  let zoomedNextFriendsPhotoURL = URL(string: urlFromRealm),
+                  let zoomedNextFriendsPhotoData = try? Data(contentsOf: zoomedNextFriendsPhotoURL) else {
+                return
+            }
             zoomedFriendsPhotoImageView.image = UIImage(data: zoomedFriendsPhotoData)
             zoomedNextFriendPhotoImageView.image = UIImage(data: zoomedNextFriendsPhotoData)
         }
-        if zoomPhotoIndex == (oneFriendPhotosFromRealm!.count - 1) {
-            guard let zoomedNextFriendsPhotoURL = URL(string: oneFriendPhotosFromRealm![0].sizes.last!.url), let zoomedNextFriendsPhotoData = try? Data(contentsOf: zoomedNextFriendsPhotoURL) else { return }
-            zoomedFriendsPhotoImageView.image = UIImage(data: zoomedFriendsPhotoData)
-            zoomedNextFriendPhotoImageView.image = UIImage(data: zoomedNextFriendsPhotoData)
-        }
-        else { return }
     }
     
     func photoNumbersArrayCreator(photoCount: Int) {
@@ -108,16 +125,39 @@ extension ZoomPhotoViewController {
             switch swipeGesture.direction {
             case .right:
                 if zoomPhotoIndex > 0 {
-                    guard let previousImageURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex-1].sizes.last!.url), let previousImageData = try? Data(contentsOf: previousImageURL) else { return }
-                    guard let shownImageURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex].sizes.last!.url), let shownImageData = try? Data(contentsOf: shownImageURL) else { return }
+                    guard let previousPhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex - 1],
+                          let urlFromRealm = previousPhoto.sizes.last?.url,
+                          let previousImageURL = URL(string: urlFromRealm),
+                          let previousImageData = try? Data(contentsOf: previousImageURL) else {
+                        return
+                    }
+                    guard let shownPhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex],
+                          let urlFromRealm = shownPhoto.sizes.last?.url,
+                          let shownImageURL = URL(string: urlFromRealm),
+                          let shownImageData = try? Data(contentsOf: shownImageURL) else {
+                        return
+                    }
                     previousImage = UIImage(data: previousImageData)
                     shownImage = UIImage(data: shownImageData)
                     photosReverseAnimation()
                 }
             case .left:
-                if zoomPhotoIndex != oneFriendPhotosFromRealm!.count - 1 {
-                    guard let nextImageURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex+1].sizes.last!.url), let nextImageData = try? Data(contentsOf: nextImageURL) else { return }
-                    guard let shownImageURL = URL(string: oneFriendPhotosFromRealm![zoomPhotoIndex].sizes.last!.url), let shownImageData = try? Data(contentsOf: shownImageURL) else { return }
+                guard let photosCount = oneFriendPhotosFromRealm?.count else {
+                    return
+                }
+                if zoomPhotoIndex != photosCount - 1 {
+                    guard let nextPhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex + 1],
+                          let urlFromRealm = nextPhoto.sizes.last?.url,
+                          let nextImageURL = URL(string: urlFromRealm),
+                          let nextImageData = try? Data(contentsOf: nextImageURL) else {
+                        return
+                    }
+                    guard let shownPhoto = oneFriendPhotosFromRealm?[zoomPhotoIndex],
+                          let urlFromRealm = shownPhoto.sizes.last?.url,
+                          let shownImageURL = URL(string: urlFromRealm),
+                          let shownImageData = try? Data(contentsOf: shownImageURL) else {
+                        return
+                    }
                     nextImage = UIImage(data: nextImageData)
                     shownImage = UIImage(data: shownImageData)
                     photosAnimation()

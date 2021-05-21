@@ -64,7 +64,7 @@ class FriendAvatar: UIControl {
             let vc = self.friendViewController.storyboard?.instantiateViewController(withIdentifier: "FriendsPhotosVC") as! PhotosViewController
             vc.name = self.titleLable.text ?? ""
             vc.friendID = self.userID
-            self.filterContentForName(self.titleLable.text!)
+            self.filterContentForName(self.titleLable.text ?? "")
             self.accessibilityActivate()
             self.friendViewController.navigationController?.pushViewController(vc, animated: true)
         })

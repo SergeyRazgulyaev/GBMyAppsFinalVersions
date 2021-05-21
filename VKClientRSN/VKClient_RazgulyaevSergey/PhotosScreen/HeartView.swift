@@ -48,13 +48,13 @@ class HeartView: UIControl {
     @objc func onTap(_ sender: Any?) {
         if heartImageView.image == UIImage(named: "HeartNo") {
             heartImageView.image = UIImage(named: "HeartYes")
-            heartCount = Int(heartLabel.text!)!
+            heartCount = Int(heartLabel.text ?? "0") ?? 0
             heartCount += 1
             UIView.transition(with: heartLabel, duration: 0.2, options: .transitionFlipFromRight, animations: {self.heartLabel.text = String(self.heartCount)})
             setNeedsDisplay()
         } else {
             heartImageView.image = UIImage(named: "HeartNo")
-            heartCount = Int(heartLabel.text!)!
+            heartCount = Int(heartLabel.text ?? "0") ?? 0
             heartCount -= 1
             UIView.transition(with: heartLabel, duration: 0.2, options: .transitionFlipFromLeft, animations: {self.heartLabel.text = String(self.heartCount)})
             setNeedsDisplay()

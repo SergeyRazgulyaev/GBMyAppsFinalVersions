@@ -29,7 +29,7 @@ class NetworkService {
         case saved = "saved"
     }
     
-    enum typeOfNews: String {
+    enum TypeOfNews: String {
         case post = "post"
         case photo = "photo,wall_photo"
     }
@@ -108,14 +108,12 @@ class NetworkService {
     }
     
     //MARK: - Method for loading Information about News
-    func loadNews(token: String, typeOfNews: typeOfNews, startTime: Double? = nil, startFrom: String, completion: ((Result<NewsResponse, Error>) -> Void)? = nil) {
+    func loadNews(token: String, typeOfNews: TypeOfNews, startTime: Double? = nil, startFrom: String, completion: ((Result<NewsResponse, Error>) -> Void)? = nil) {
         let path = "/method/newsfeed.get"
         
         var params: Parameters = [
             "access_token": token,
             "filters": typeOfNews,
-//            "source_ids": "friends",
-//            "source_ids": "groups",
             "start_from": startFrom,
             "count": 5,
             "v": apiVersion

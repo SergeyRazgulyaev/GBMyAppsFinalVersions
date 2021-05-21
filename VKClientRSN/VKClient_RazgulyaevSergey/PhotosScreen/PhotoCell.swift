@@ -45,7 +45,8 @@ class PhotoCell: UICollectionViewCell {
     @objc func onTap(_ sender: Any?) {
         photosViewController.shouldPerformSegue(withIdentifier: "zoomPhotoSegue", sender: Any?.self)
         let vc = photosViewController.storyboard?.instantiateViewController(withIdentifier: "ZoomPhotoVC") as! ZoomPhotoViewController
-        vc.friendZoomPhotoNumber = Int(photoNumberLabel.text!) ?? 1
+        
+        vc.friendZoomPhotoNumber = Int(photoNumberLabel.text ?? "1") ?? 1
         vc.friendID = userID
         vc.transitioningDelegate = photosViewController as? UIViewControllerTransitioningDelegate
         photosViewController.navigationController?.delegate = photosViewController as? UINavigationControllerDelegate

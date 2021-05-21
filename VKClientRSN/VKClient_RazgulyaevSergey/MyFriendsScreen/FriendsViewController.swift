@@ -102,11 +102,10 @@ class FriendsViewController: UIViewController, UITableViewDelegate {
 //MARK: - Interaction with Network
 extension FriendsViewController {
     func loadFriendsFromNetWorkIfNeeded() {
-        if let friends = friendsFromRealmDB, friends.isEmpty {
-            loadFriendsFromNetWork()
-        } else {
-            arrayWithFirstLettersOfFriendsNameCreation()
+        guard let friends = friendsFromRealmDB, friends.isEmpty else {
+            return arrayWithFirstLettersOfFriendsNameCreation()
         }
+        loadFriendsFromNetWork()
     }
     
     func loadFriendsFromNetWork(completion: (() -> Void)? = nil) {
@@ -216,17 +215,16 @@ extension FriendsViewController: UITableViewDataSource {
 //MARK: - Preparing Data for display
 extension FriendsViewController {
     func arrayWithFirstLettersOfFriendsNameCreation() {
+        guard let friendsFromRealmDB = friendsFromRealmDB,
+              friendsFromRealmDB.count > 0 else {
+            return // If network error
+        }
         setWithFirstLettersOfFriendsName = []
         arrayWithFirstLettersOfFriendsName = []
-        if let friendsFromRealmDB = friendsFromRealmDB {
-            guard friendsFromRealmDB.count > 0 else {
-                return // If network error
-            }
-            for friend in friendsFromRealmDB {
-                setWithFirstLettersOfFriendsName.insert(String(friend.firstName.first!))
-            }
-            arrayWithFirstLettersOfFriendsName = setWithFirstLettersOfFriendsName.sorted()
+        for friend in friendsFromRealmDB {
+            setWithFirstLettersOfFriendsName.insert(String(friend.firstName.first!))
         }
+        arrayWithFirstLettersOfFriendsName = setWithFirstLettersOfFriendsName.sorted()
     }
 }
 

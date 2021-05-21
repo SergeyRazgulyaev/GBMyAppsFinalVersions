@@ -160,12 +160,19 @@ extension GroupsViewController: UITableViewDataSource {
     }
     
     func configureCell(indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupCell") as? GroupCell else { return UITableViewCell() }
-        let group = filteredGroups?[indexPath.row]
-        let groupAvatar = group?.photo100 ?? ""
-        let titleLabelText = group?.name ?? ""
-        guard let url = URL(string: groupAvatar), let data = try? Data(contentsOf: url) else { return cell }
-        let groupAvatarImage = (UIImage(data: data) ?? UIImage(systemName: "tortoise.fill"))!
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupCell") as? GroupCell else {
+            return UITableViewCell()
+        }
+        guard let group = filteredGroups?[indexPath.row] else {
+            return cell
+        }
+        let groupAvatar = group.photo100
+        guard let url = URL(string: groupAvatar),
+              let data = try? Data(contentsOf: url),
+              let groupAvatarImage = (UIImage(data: data)) else {
+            return cell
+        }
+        let titleLabelText = group.name
         cell.configure(titleLabelText: titleLabelText, groupAvatarImage: groupAvatarImage)
         return cell
     }

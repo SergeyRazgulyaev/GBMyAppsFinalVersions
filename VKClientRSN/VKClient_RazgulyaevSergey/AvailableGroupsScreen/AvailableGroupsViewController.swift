@@ -61,7 +61,7 @@ class AvailableGroupsViewController: UIViewController, UITableViewDelegate {
 //MARK: - Interaction with Network
 extension AvailableGroupsViewController {
     func loadAvailableGroupsFromNetWork() {
-        networkService.loadSearchedGroups(token: Session.instance.token, searchedGroupName: searchBar.text!) { [weak self] result in
+        networkService.loadSearchedGroups(token: Session.instance.token, searchedGroupName: searchBar.text ?? "") { [weak self] result in
             switch result {
             case let .success(groups):
                 self?.availableGroups = []

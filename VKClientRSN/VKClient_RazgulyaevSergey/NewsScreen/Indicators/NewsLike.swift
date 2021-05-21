@@ -45,13 +45,13 @@ class NewsLike: UIControl {
     @objc func onTap(_ sender: Any?) {
         if newsLikeImage.image == UIImage(named: "HeartNo") {
             newsLikeImage.image = UIImage(named: "HeartYes")
-            newsLikeCount = Int(newsLikeLabel.text!)!
+            newsLikeCount = Int(newsLikeLabel.text ?? "0") ?? 0
             newsLikeCount += 1
             UIView.transition(with: newsLikeLabel, duration: 0.2, options: .transitionFlipFromRight, animations: {self.newsLikeLabel.text = String(self.newsLikeCount)})
             setNeedsDisplay()
         } else {
             newsLikeImage.image = UIImage(named: "HeartNo")
-            newsLikeCount = Int(newsLikeLabel.text!)!
+            newsLikeCount = Int(newsLikeLabel.text ?? "0") ?? 0
             newsLikeCount -= 1
             UIView.transition(with: newsLikeLabel, duration: 0.2, options: .transitionFlipFromLeft, animations: {self.newsLikeLabel.text = String(self.newsLikeCount)})
             setNeedsDisplay()
